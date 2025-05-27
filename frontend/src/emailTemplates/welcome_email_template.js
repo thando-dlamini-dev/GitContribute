@@ -34,7 +34,7 @@ export const welcomeEmailTemplate = (userData) => {
         }
         
         .header {
-            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            background: rgb(73, 73, 73);
             padding: 40px 30px;
             text-align: center;
             color: white;
@@ -94,7 +94,7 @@ export const welcomeEmailTemplate = (userData) => {
         
         .cta-button {
             display: inline-block;
-            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            background: rgb(26, 32, 44);
             color: white;
             padding: 16px 32px;
             text-decoration: none;
@@ -124,7 +124,7 @@ export const welcomeEmailTemplate = (userData) => {
         .feature-icon {
             width: 40px;
             height: 40px;
-            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            background: rgb(26, 32, 44);
             border-radius: 50%;
             display: flex;
             align-items: center;

@@ -5,7 +5,8 @@ import morgan from "morgan";
 import helmet from "helmet";
 import path from "path";
 import { fileURLToPath } from 'url';
-import { sendWelcomeEmail, sendTestEmail } from "./lib/nodeMailer.config.js";
+import emailRoutes from "./routes/email.route.js";
+import { sendWelcomeEmail, verifyEmailConfig } from "./lib/nodeMailer.config.js";
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
@@ -26,23 +27,11 @@ app.use(express.urlencoded({ extended: true }));
 app.use(express.static(path.join(__dirname, 'public')));
 app.use(express.json({limit: "500mb"}));
 
+//routes
+
+app.use("/api", emailRoutes)
+
 app.listen(PORT, async () => {
     console.log(`Server running on port: , ${PORT}`);
-
-    // Send welcome email
-    await sendWelcomeEmail({
-    name: "Thando Dlamini",
-    email: "dlamininkosi210@gmail.com",
-    githubUsername: "thandodlamini",
-    techStack: ["JavaScript", "React", "Node.js"]
-    });
-
-    // Verify configuration
-    try {
-    await verifyEmailConfig();
-    console.log("Email service is ready!");
-    } catch (error) {
-    console.error("Email service configuration failed:", error);
-    }
 })
 

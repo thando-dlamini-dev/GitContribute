@@ -54,6 +54,8 @@ export const sendEmail = async (to, subject, htmlContent, textContent = null) =>
             text: textContent || 'Please enable HTML to view this email properly.'
         };
 
+        console.log('Sender: ', process.env.NODEMAILER_EMAIL);
+
         const info = await transporter.sendMail(mailOptions);
         console.log('Email sent successfully!');
         console.log('Message ID:', info.messageId);

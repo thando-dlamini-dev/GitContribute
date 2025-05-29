@@ -32,6 +32,6 @@ app.use(express.json({limit: "500mb"}));
 app.use("/api", emailRoutes)
 
 app.listen(PORT, async () => {
-    console.log(`Server running on port: , ${PORT}`);
+    console.log(`Server running on port: ${PORT}`);
 })
 

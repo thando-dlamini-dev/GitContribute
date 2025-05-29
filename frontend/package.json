@@ -10,9 +10,14 @@
     "preview": "vite preview"
   },
   "dependencies": {
+    "@tailwindcss/vite": "^4.1.8",
+    "framer-motion": "^12.15.0",
     "frontend": "file:",
     "react": "^19.1.0",
     "react-dom": "^19.1.0",
+    "react-hot-toast": "^2.5.2",
+    "react-router-dom": "^7.6.1",
+    "tailwindcss": "^4.1.8",
     "yarn": "^1.22.22",
     "zustand": "^5.0.5"
   },

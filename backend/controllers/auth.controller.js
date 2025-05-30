@@ -1,6 +1,6 @@
 import passport from "passport";
 import { generateToken } from "../lib/passport.config.js";
-import { OctokitConfig } from "../lib/octokit.config.js";
+import { fetchUserProfile, OctokitConfig } from "../lib/octokit.config.js";
 import { findOrCreateUser } from "../models/user.model.js";
 
 // GitHub OAuth authentication
@@ -91,6 +91,17 @@ export const logoutUser = (req, res) => {
     message: 'Logout successful'
   });
 };
+
+export const getUserProfile = async (req, res) => {
+  try {
+    const { id } = req.params;
+    const userProfile = await fetchUserProfile(id);
+    res.status(200).json({success: true, message: "User profile fetched successfully", userProfile});
+  } catch (error) {
+    console.log("Error in getUserProfile endpoint:", error);
+    res.status(500).json({success: false, message: "Error while fetching user profile", error});
+  }
+}
 
 // Create a GitHub repository
 export const createRepository = async (req, res) => {

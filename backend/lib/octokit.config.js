@@ -4,6 +4,13 @@ const octokit = new Octokit({
   auth: process.env.GITHUB_TOKEN
 });
 
+export const fetchUserProfile = async (user) => {
+  const { id, username } = user
+  console.log("Fetching user profile for user. ", "User ID: ", id, "Username:", username);
+  const userProfile = await octokit.users.getById(id)
+
+}
+
 // Method 1: Search by Topics (Recommended)
 export const searchReposByStack = async (stack, username = null) => {
   try {
@@ -183,28 +190,6 @@ export const searchPopularStacks = async (stackName) => {
   }
 };
 
-// Usage Examples:
-
-// 1. Search by topics (most reliable)
-const reactRepos = await searchReposByStack(['react', 'nodejs', 'mongodb']);
-
-// 2. Search by language + keywords
-const fullstackRepos = await searchReposByTechStack('javascript', ['fullstack', 'web-app']);
-
-// 3. Advanced search
-const advancedResults = await advancedStackSearch({
-  languages: ['javascript', 'typescript'],
-  topics: ['react', 'nextjs'],
-  keywords: ['ecommerce', 'dashboard'],
-  minStars: 100,
-  created: '>2023-01-01'
-});
-
-// 4. Popular stack search
-const mernRepos = await searchPopularStacks('mern');
-
-// 5. User-specific stack search
-const userReactRepos = await searchReposByStack('react', 'vercel');
 
 export const extractRepoData = (repo) => {
     if (!repo) {

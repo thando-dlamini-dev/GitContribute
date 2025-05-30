@@ -1,4 +1,4 @@
-import { searchPopularStacks } from "../lib/octokit.config";
+import { searchPopularStacks, searchReposByStack } from "../lib/octokit.config.js";
 
 export const fetchPopularStacks = async (req, res) => {
     try {
@@ -18,7 +18,11 @@ export const fetchPopularStacks = async (req, res) => {
 
 export const fetchReposByStack = async (req, res) => {
     try {
-        const { stack } = req.body
+        let stack
+        if(req.body){
+            console.log("body", req.body);
+            stack = req.body.stack
+        }
         if(!stack){
             return res.status(400).json({success: false, message: "Tech stack is required"});
         }

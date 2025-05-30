@@ -6,6 +6,7 @@ import helmet from "helmet";
 import path from "path";
 import { fileURLToPath } from 'url';
 import emailRoutes from "./routes/email.route.js";
+import RepoRoutes from "./routes/repo.route.js"
 import { sendWelcomeEmail, verifyEmailConfig } from "./lib/nodeMailer.config.js";
 
 const __filename = fileURLToPath(import.meta.url);
@@ -28,8 +29,8 @@ app.use(express.static(path.join(__dirname, 'public')));
 app.use(express.json({limit: "500mb"}));
 
 //routes
-
-app.use("/api", emailRoutes)
+app.use("/api/repos", RepoRoutes)
+app.use("/api/emails", emailRoutes)
 
 app.listen(PORT, async () => {
     console.log(`Server running on port: ${PORT}`);

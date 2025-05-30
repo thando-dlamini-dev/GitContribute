@@ -2,7 +2,7 @@ import { Play, CheckCircle, Github, Code, Star, TrendingUp } from "lucide-react"
 
 const CTASection = () => {
   return (
-    <div className="py-20 bg-gradient-to-r from-purple-600 via-purple-700 to-blue-700">
+    <div className="py-20 bg-purple-600 ">
       <div className="max-w-4xl px-6 mx-auto text-center sm:px-12">
         <div className="mb-8">
           <h2 className="mb-6 text-3xl font-bold text-white sm:text-4xl lg:text-5xl">

@@ -23,8 +23,8 @@ export const githubCallback = async (req, res) => {
       id: req.user.id,
       username: req.user.username || req.user.id, // Fallback to ID if username missing
       displayName: req.user.displayName || req.user.username || 'GitHub User',
-      email: req.user.emails?.[0]?.value || null,
-      avatar: req.user.photos?.[0]?.value || null,
+      email: req.user.email?.[0]?.value || null,
+      avatar: req.user.profilePicture || req.user.photos?.[0]?.value || null,
       accessToken: req.user.accessToken
     };
 

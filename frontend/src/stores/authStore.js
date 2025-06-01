@@ -1,9 +1,10 @@
 import { create } from "zustand";
-import api from "../lib/axios";
-import { jwtDecode } from "jwt-decode";
-import { toast } from "react-hot-toast";
 import { persist } from "zustand/middleware";
+import toast from "react-hot-toast";
+import { jwtDecode } from "jwt-decode";
+import api from "../lib/axios.js";
 
+// Separate function for token refresh to avoid recreation in store
 const refreshToken = async () => {
   try {
     const token = localStorage.getItem('token');
@@ -29,14 +30,17 @@ const refreshToken = async () => {
 };
 
 const useAuthStore = create(
-    persist(
-        (set) => {
-            return ({
-    user: null,
-    loading: false,
-    token: null,
-    isAuthenticated: false,
-    initialize: async () => {
+  persist(
+    (set, get) => {
+      return ({
+        // Authentication state
+        user: null,
+        isAuthenticated: false,
+        isLoading: true,
+        token: null,
+
+        // Initialize authentication state
+        initialize: async () => {
           try {
             const token = localStorage.getItem('token');
 
@@ -56,6 +60,7 @@ const useAuthStore = create(
               if (!newToken) throw new Error('Token refresh failed');
 
               const newDecoded = jwtDecode(newToken);
+              console.log("Setting User: ", newDecoded);
               set({
                 user: {
                   id: newDecoded.id,
@@ -87,47 +92,82 @@ const useAuthStore = create(
               isAuthenticated: false,
               isLoading: false
             });
-        }
-    },
+          }
+        }, 
 
-    loginWithGitHub: () => {
+        // GitHub login method
+        loginWithGitHub: () => {
           // Clear any existing tokens and state before login
           localStorage.removeItem('token');
 
           // Add timestamp to prevent caching of the auth request
           const timestamp = new Date().getTime();
 
-          window.location.href = `http://localhost:5000/api/auth/github?t=${timestamp}`;
-    },
+          window.location.href = `http://localhost:5500/api/auth/github?t=${timestamp}`;
+        },
 
-    fetchUserProfile: async (user) => {
-        try {
-            console.log("Fetching user profile for user. ", "User ID: ", user.id, "Username:", user.username);
-            set({loading: true})
-            const response = await api.get(`/api/auth/user-profile/${user.id}`);
-            set({userProfile: response.data.userProfile, loading: false})
-        } catch (error) {
-            set({loading: false})
-            console.log("Error in fetchUserProfile endpoint:", error);
-            toast.error(error.response.data.message);
-        }
-    },
 
-    setupTokenRefresh: () => {
+        // Logout method
+        logout: async () => {
+          try {
+            // Call logout endpoint
+            const token = localStorage.getItem('token');
+            if (token) {
+              await api.post('/api/auth/logout', {}, {
+                headers: {Authorization: `Bearer ${token}`}
+              }).catch(err => console.log('Logout API error (non-critical):', err));
+            }
+          } catch (error) {
+            console.error('Logout error:', error);
+          }
+
+          // Clear local storage
+          localStorage.removeItem('token');
+          localStorage.removeItem('githubToken');
+
+          // Reset state
+          set({
+            user: null,
+            token: null,
+            isAuthenticated: false
+          });
+
+          // Display success message
+          toast.success("Logged out successfully.");
+
+          // Optional: Force clean GitHub OAuth state
+          setTimeout(() => {
+            window.location.href = "https://github.com/logout";
+          }, 500);
+        },
+
+        // Set authentication data after successful login
+        setAuthData: (authData) => {
+          if (!authData || !authData.token || !authData.user) return;
+
+          localStorage.setItem('token', authData.token);
+          set({
+            user: authData.user,
+            token: authData.token,
+            isAuthenticated: true
+          });
+        },
+
+        // Setup auto token refresh
+        setupTokenRefresh: () => {
           // Initial check
           refreshToken();
           // Check every 10 minutes
           const interval = setInterval(refreshToken, 600000);
           return () => clearInterval(interval);
-    }
-
-    })
+        }
+      });
     },
     {
-        name: 'auth-store',
-        partialize: (state) => ({ token: state.token }), // Only persist token to localStorage
+      name: "auth-storage", // Name for localStorage key
+      partialize: (state) => ({ token: state.token }), // Only persist token to localStorage
     }
- )
-)
+  )
+);
 
-export default useAuthStore
+export default useAuthStore;

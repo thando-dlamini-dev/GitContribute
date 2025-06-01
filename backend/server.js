@@ -9,6 +9,7 @@ import { fileURLToPath } from 'url';
 import emailRoutes from "./routes/email.route.js";
 import RepoRoutes from "./routes/repo.route.js"
 import authRoutes from "./routes/auth.route.js"
+import cookieParser from "cookie-parser";
 import { initDatabase } from './lib/db.config.js';
 import { initializePassPort } from "../backend/lib/passport.config.js";
 import passport from "passport";
@@ -31,6 +32,7 @@ app.use(cors({
 app.use(express.urlencoded({ extended: true }));
 app.use(express.static(path.join(__dirname, 'public')));
 app.use(express.json({limit: "500mb"}));
+app.use(cookieParser());
 
 // Session configuration
 app.use(session({

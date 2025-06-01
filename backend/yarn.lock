@@ -478,10 +478,11 @@ axios@^1.9.0:
     "@apollo/server" "^4.12.1"
     "@octokit/rest" "^22.0.0"
     axios "^1.9.0"
-    backend "file:../../../../AppData/Local/Yarn/Cache/v6/npm-backend-1.0.0-d10c44a5-ac91-4b72-8aab-78faa8c513bc-1748773713418/node_modules/backend"
+    backend "file:../../../../AppData/Local/Yarn/Cache/v6/npm-backend-1.0.0-559692e5-e77e-46da-98aa-e12e060351df-1748805153477/node_modules/backend"
     cors "^2.8.5"
     dotenv "^16.5.0"
     express "^5.1.0"
+    express-session "^1.18.1"
     graphql "^16.11.0"
     helmet "^8.1.0"
     jsonwebtoken "^9.0.2"
@@ -641,6 +642,14 @@ content-type@^1.0.5, content-type@~1.0.4, content-type@~1.0.5:
   version "1.0.5"
   resolved "https://registry.npmjs.org/content-type/-/content-type-1.0.5.tgz"
   integrity sha512-nTjqfcBFEipKdXCv4YDQWCfmcLZKm81ldF0pAopTvyrFGVbcR6P/VAAd5G7N+0tTr8QqiU0tFadD6FK4NtJwOA==
+
+cookie-parser@^1.4.7:
+  version "1.4.7"
+  resolved "https://registry.yarnpkg.com/cookie-parser/-/cookie-parser-1.4.7.tgz#e2125635dfd766888ffe90d60c286404fa0e7b26"
+  integrity sha512-nGUvgXnotP3BsjiLX2ypbQnWoGUPIIfHQNZkkC668ntrzGWEZVW70HDEB1qnNGMicPje6EttlIgzo51YSwNQGw==
+  dependencies:
+    cookie "0.7.2"
+    cookie-signature "1.0.6"
 
 cookie-signature@1.0.6:
   version "1.0.6"

@@ -1,6 +1,6 @@
 import React, { useState } from 'react'
 import { Code, Menu, X } from 'lucide-react'
-import useAuthStore from '../stores/authStore'
+import useAuthStore from '../stores/authStore';
 
 const Navbar = () => {
     const [isMenuOpen, setIsMenuOpen] = useState(false)
@@ -61,18 +61,31 @@ const Navbar = () => {
 
                     {/* Desktop CTA Buttons */}
                     <div className='items-center hidden gap-4 lg:flex'>
-                        <a 
+                        {!user && <a 
                             href="/login" 
                             className='font-medium transition-colors duration-300 text-slate-600 hover:text-purple-600'
                         >
                             Login
-                        </a>
-                        <a 
+                        </a>}
+                        {user && <a 
+                            href="/login" 
+                            className='font-medium transition-colors duration-300 text-slate-600 hover:text-purple-600'
+                        >
+                            Logout
+                        </a>}
+                        {user && 
+                        <img 
+                            src={user.avatar} 
+                            className='w-8 h-8 border-4 rounded-full border-neutral-900' 
+                            alt="User Avatar" 
+                            />
+                        }
+                        {!user && <a 
                             href="/signup" 
                             className='bg-purple-600 hover:bg-purple-700 text-white font-semibold px-6 py-2.5 rounded-full transition-all duration-300 shadow-lg hover:shadow-xl'
                         >
                             Start For Free
-                        </a>
+                        </a>}
                     </div>
 
                     {/* Mobile Menu Button */}

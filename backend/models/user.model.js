@@ -8,7 +8,7 @@ export const findOrCreateUser = async (profile) => {
       username: profile.username || `user-${profile.id.substring(0, 8)}`, // Guaranteed username
       displayName: profile.displayName || profile.username || `GitHub User ${profile.id.substring(0, 4)}`,
       email: profile.email || profile.emails?.[0]?.value || null,
-      avatar: profile.avatar || profile.photos?.[0]?.value || null,
+      avatar: profile.profilePicture || profile.photos?.[0]?.value || null,
       accessToken: profile.accessToken
     };
 

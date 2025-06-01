@@ -1,16 +1,19 @@
 import React, { useEffect, useState} from 'react'
 import { AnimatePresence } from "framer-motion";
-import { redirect, Route, Routes, useLocation } from "react-router-dom";
+import { Route, Routes, useLocation } from "react-router-dom";
 import LandingPage from './pages/LandingPage';
 import { Toaster } from 'react-hot-toast';
 import Navbar from './components/navbar';
 import LoginPage from './pages/LoginPage';
 import useAuthStore from './stores/authStore';
+import LoginSuccess from './components/LoginSuccess';
 
 const App = () => {
+  const location = useLocation();
 
   // Use shallow comparison to prevent infinite loops with object selectors
   const initialize = useAuthStore(state => state.initialize);
+  const isAuthenticated = useAuthStore(state => state.isAuthenticated);
   const setupTokenRefresh = useAuthStore(state => state.setupTokenRefresh);
   const loading = useAuthStore(state => state.loading);
 
@@ -50,6 +53,7 @@ const App = () => {
           <Routes location={location} key={location.pathname}>
             <Route path='/' element={<LandingPage />} />
             <Route path='/login' element={<LoginPage/>} />
+            <Route path="/login/success" element={<LoginSuccess />} />
           </Routes>
         </AnimatePresence>
       </div>

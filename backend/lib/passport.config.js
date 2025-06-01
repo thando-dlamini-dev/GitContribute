@@ -5,6 +5,7 @@ import { Strategy as JwtStrategy } from 'passport-jwt';
 import { ExtractJwt } from 'passport-jwt';
 
 export const initializePassPort = () => {
+    console.log("Github Client ID:", process.env.GITHUB_CLIENT_ID)
     passport.use(new GitHubStrategy({
         clientID: process.env.GITHUB_CLIENT_ID,
         clientSecret: process.env.GITHUB_CLIENT_SECRET,

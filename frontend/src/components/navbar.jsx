@@ -1,8 +1,11 @@
 import React, { useState } from 'react'
 import { Code, Menu, X } from 'lucide-react'
+import useAuthStore from '../stores/authStore'
 
 const Navbar = () => {
     const [isMenuOpen, setIsMenuOpen] = useState(false)
+
+    const { user, logout } = useAuthStore();
     
     const navLinks = [
 
@@ -100,6 +103,27 @@ const Navbar = () => {
                                 </a>
                             ))}
                             <div className='flex flex-col gap-3 pt-4 mt-4 border-t border-slate-200'>
+                                
+                                {user ? (
+                                <>
+                                <button 
+                                    onClick={() => {
+                                    logout();
+                                    setIsMobileMenuOpen(false);
+                                    }} 
+                                    className='w-full p-2 px-4 mb-2 font-semibold text-white transition-transform duration-300 ease-in-out rounded-full cursor-pointer lg:w-auto hover:scale-105 bg-neon-yellow lg:mb-0'
+                                >
+                                    Log out
+                                </button>
+                                <div className='flex items-center justify-center gap-2 py-2 lg:justify-start lg:py-0'>
+                                    <img 
+                                    src={user.avatar} 
+                                    className='w-8 h-8 border-4 rounded-full border-neutral-900' 
+                                    alt="User Avatar" 
+                                    />
+                                </div>
+                                </>
+                            ) : (<>
                                 <a 
                                     href="/login" 
                                     className='py-2 font-medium transition-colors duration-300 text-slate-600 hover:text-purple-600'
@@ -114,6 +138,8 @@ const Navbar = () => {
                                 >
                                     Start For Free
                                 </a>
+                                </>
+                            )}
                             </div>
                         </div>
                     </div>

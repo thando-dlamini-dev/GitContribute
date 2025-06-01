@@ -1,6 +1,6 @@
 import passport from "passport";
 import { generateToken } from "../lib/passport.config.js";
-import { fetchUserProfile, OctokitConfig } from "../lib/octokit.config.js";
+import { fetchUserProfile } from "../lib/octokit.config.js";
 import { findOrCreateUser } from "../models/user.model.js";
 
 // GitHub OAuth authentication
@@ -102,76 +102,6 @@ export const getUserProfile = async (req, res) => {
     res.status(500).json({success: false, message: "Error while fetching user profile", error});
   }
 }
-
-// Create a GitHub repository
-export const createRepository = async (req, res) => {
-  try {
-    const { repoName, description, isPrivate, files } = req.body;
-    
-    if(!repoName) {
-      return res.status(400).json({success: false, message: "Repository name is required"});
-    }
-    
-    const user = req.user;
-    
-    if(!user || !user.accessToken) {
-      return res.status(401).json({ error: "Authentication required"});
-    }
-    
-    const githubService = new OctokitConfig(user.accessToken);
-    
-    //Create repository
-    const repoData = await githubService.createRepository(
-      repoName,
-      description || "",
-      isPrivate || false
-    );
-    
-    //Default starter files if none provided
-    const defaultFiles = {
-      'README.md': `# ${repoName}\n\n${description || 'A new project created via the app.'}\n`,
-      'index.js': `console.log('Hello ${repoName}!');`,
-      'package.json': JSON.stringify({
-        name: repoName.toLowerCase().replace(/\s+/g, '-'),
-        version: '1.0.0',
-        description: description || '',
-        main: 'index.js',
-        scripts: {
-          test: 'echo "Error: no test specified" && exit 1',
-          start: 'node index.js'
-        },
-        keywords: [],
-        author: user.username || '',
-        license: 'MIT'
-      }, null, 2)
-    };
-    
-    const filesToAdd = files || defaultFiles;
-    
-    const result = await githubService.initializeRepositoryWithFiles(
-      repoData.owner.login,
-      repoData.name,
-      filesToAdd
-    );
-    
-    return res.status(200).json({
-      message: "Repository created successfully",
-      repository: {
-        id: repoData.id,
-        name: repoData.name,
-        url: repoData.html_url,
-        description: repoData.description,
-        private: repoData.private
-      }
-    });
-  } catch (error) {
-    console.log("Error creating repository:", error);
-    return res.status(500).json({
-      error: "Failed to create repository",
-      details: error.message
-    });
-  }
-};
 
 // Get user info from GitHub
 export const getUserInfo = async (req, res) => {

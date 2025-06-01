@@ -1,6 +1,6 @@
 import React from 'react'
 import { Github, Code, Users, TrendingUp, Star, GitBranch } from 'lucide-react'
-import { motion } from 'framer-motion'
+import { AnimatePresence, motion } from 'framer-motion'
 
 const HeroSection = () => {
   return (
@@ -8,28 +8,28 @@ const HeroSection = () => {
       {/* Left Content Section */}
       <div className='flex flex-col justify-center w-full px-6 py-12 lg:w-1/2 sm:px-12 lg:px-20 lg:py-0'>
         <div className='max-w-xl'>
-          <h1 className='mb-6 text-3xl font-bold leading-tight text-slate-800 sm:text-4xl lg:text-5xl'>
+          <motion.h1 initial={{opacity: 0, x:-50}} animate={{opacity: 1, x:0}} transition={{duration: 0.2, ease: 'easeInOut'}} className='mb-6 text-3xl font-bold leading-tight text-slate-800 sm:text-4xl lg:text-5xl'>
             Discover Open Source Projects That 
             <span className='text-gradient-to-br from-purple-600 to-blue-600'> Match Your Skills</span>
-          </h1>
-          <p className='mb-8 text-base leading-relaxed text-slate-600 sm:text-lg'>
+          </motion.h1>
+          <motion.p initial={{opacity: 0, x:-50}} animate={{opacity: 1, x:0}} transition={{duration: 0.4, ease: 'easeInOut'}} className='mb-8 text-base leading-relaxed text-slate-600 sm:text-lg'>
             GitContribute uses AI to match developers with open-source projects that fit their skills. 
             Get personalized recommendations, track your progress, and receive daily emails with new opportunities. 
             Our platform is designed to help you contribute and grow.
-          </p>
-          <div className='flex flex-col gap-4 sm:flex-row sm:gap-6'>
+          </motion.p>
+          <motion.div initial={{opacity: 0, x:-50}} animate={{opacity: 1, x:0}} transition={{duration: 0.6, ease: 'easeInOut'}} className='flex flex-col gap-4 sm:flex-row sm:gap-6'>
             <button className='px-8 py-3 text-lg font-semibold text-center text-white transition-colors duration-200 bg-purple-600 rounded-full shadow-lg cursor-pointer hover:bg-purple-700 hover:shadow-xl'>
               Start Contributing Today
             </button>
             <button className='px-8 py-3 text-lg font-semibold text-center text-purple-600 transition-colors duration-200 border-2 border-purple-600 rounded-full cursor-pointer hover:bg-purple-50'>
               How It Works
             </button>
-          </div>
+          </motion.div>
         </div>
       </div>
 
       {/* Right Visual Section */}
-      <div className='flex items-center justify-center w-full p-6 lg:w-1/2 lg:p-12'>
+      <motion.div initial={{opacity: 0, x:50}} animate={{opacity: 1, x:0}} transition={{duration: 0.5, ease: 'easeInOut'}} className='flex items-center justify-center w-full p-6 lg:w-1/2 lg:p-12'>
         <div className='relative w-full max-w-md'>
           {/* Main GitHub Card */}
           <div className='p-6 mb-4 bg-white border shadow-2xl rounded-2xl border-slate-200'>
@@ -100,7 +100,7 @@ const HeroSection = () => {
             </div>
           </div>
         </div>
-      </div>
+      </motion.div>
     </div>
   )
 }

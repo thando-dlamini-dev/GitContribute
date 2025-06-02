@@ -141,38 +141,41 @@ const useAuthStore = create(
           }, 500);
         },
 
-        getUserProfile: async (userIdentifier) => {
-            try {
-                const token = localStorage.getItem('token');
-                
-                if (!token) {
-                    toast.error("No authentication token found");
-                    return;
-                }
-                
-                set({isLoading: true});
-                
-                // Correct axios.get syntax: axios.get(url, config)
-                const result = await api.get(`/api/auth/user/user-profile/${userIdentifier}`, {
-                    headers: {Authorization: `Bearer ${token}`}
-                });
-                
-                toast.success(result.data.message);
-                set({isLoading: false, userProfile: result.data.userProfile});
-                
-            } catch (error) {
-                set({isLoading: false});
-                console.error("Store error:", error);
-                
-                // Better error handling
-                if (error.response?.status === 401) {
-                    toast.error("Authentication failed. Please login again.");
-                    // Trigger logout or redirect to login
-                    get().logout();
-                } else {
-                    toast.error("Error while fetching user profile: " + (error.response?.data?.message || error.message));
-                }
+        getUserProfile: async (userId) => {
+          const { isLoading, userProfile } = get();
+          
+          // Prevent multiple simultaneous requests
+          if (isLoading) {
+            console.log("Already loading, skipping request");
+            return;
+          }
+          
+          // Don't refetch if we already have the profile
+          if (userProfile?.id === userId) {
+            console.log("Profile already exists, skipping request");
+            return;
+          }
+
+          set({ isLoading: true, error: null });
+          
+          try {
+            const response = await api.get(`/api/auth/user/user-profile/${userId}`);
+            
+            if (response.data.success) {
+              set({ 
+                userProfile: response.data.userProfile, 
+                isLoading: false 
+              });
+            } else {
+              throw new Error(response.data.message || 'Failed to fetch profile');
             }
+          } catch (error) {
+            console.error('Error fetching user profile:', error);
+            set({ 
+              error: error.response?.data?.message || error.message, 
+              isLoading: false 
+            });
+          }
         },
 
         // Set authentication data after successful login

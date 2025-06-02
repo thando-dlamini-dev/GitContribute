@@ -1,38 +1,88 @@
 import { Octokit } from '@octokit/rest';
 
-const octokit = new Octokit({
-  auth: process.env.GITHUB_TOKEN
-});
+// Create Octokit instance with user's token
+const createOctokitInstance = (userToken = null) => {
+  return new Octokit({
+    auth: userToken || process.env.GITHUB_TOKEN
+  });
+};
 
-export const fetchUserProfile = async (username) => {
+// Modified to accept user token
+export const fetchUserProfile = async (userId, userToken = null) => {
   try {
-    console.log("Fetching user profile for username:", username);
-    const response = await octokit.users.getByUsername({
-      username: username
+    console.log("Fetching user profile for user ID:", userId);
+    
+    const octokit = createOctokitInstance(userToken);
+    
+    // Use getById for numeric GitHub user IDs
+    const response = await octokit.users.getById({
+      user_id: parseInt(userId) // GitHub API expects a number
     });
+    
     return response.data;
   } catch (error) {
-    console.error("Octokit error:", error);
-    throw error;
+    console.error("Octokit error:", error.message);
+    
+    // More specific error messages
+    if (error.message.includes('rate limit')) {
+      throw new Error("GitHub API rate limit exceeded. Please try again later.");
+    } else if (error.status === 404) {
+      throw new Error("User not found on GitHub.");
+    } else {
+      throw new Error("Failed to fetch user profile: " + error.message);
+    }
   }
 }
 
-// Method 1: Search by Topics (Recommended)
-export const searchReposByStack = async (stack, username = null) => {
+// Alternative: Get user by username (doesn't require authentication)
+export const fetchUserByUsername = async (username, userToken = null) => {
   try {
+    console.log("Fetching user profile for username:", username);
+    
+    const octokit = createOctokitInstance(userToken);
+    
+    const response = await octokit.users.getByUsername({
+      username: username
+    });
+    
+    return response.data;
+  } catch (error) {
+    console.error("Octokit error:", error.message);
+    throw new Error("Failed to fetch user profile: " + error.message);
+  }
+}
+
+// Get current authenticated user (requires user token)
+export const getCurrentAuthenticatedUser = async (userToken) => {
+  try {
+    if (!userToken) {
+      throw new Error("User token is required for this operation");
+    }
+    
+    const octokit = createOctokitInstance(userToken);
+    const response = await octokit.users.getAuthenticated();
+    
+    return response.data;
+  } catch (error) {
+    console.error("Octokit error:", error.message);
+    throw new Error("Failed to fetch authenticated user: " + error.message);
+  }
+}
+
+// Rest of your existing functions with token support
+export const searchReposByStack = async (stack, username = null, userToken = null) => {
+  try {
+    const octokit = createOctokitInstance(userToken);
+    
     let query = '';
     
-    // Build query based on stack
     if (Array.isArray(stack)) {
-      // Multiple technologies: ['react', 'nodejs', 'mongodb']
       const topics = stack.map(tech => `topic:${tech.toLowerCase()}`).join(' ');
       query = topics;
     } else {
-      // Single technology
       query = `topic:${stack.toLowerCase()}`;
     }
     
-    // Add user filter if specified
     if (username) {
       query += ` user:${username}`;
     }
@@ -51,7 +101,6 @@ export const searchReposByStack = async (stack, username = null) => {
   }
 };
 
-// Method 2: Search by Language + Keywords in Description
 export const searchReposByTechStack = async (primaryLang, keywords, username = null) => {
   try {
     let query = `language:${primaryLang}`;

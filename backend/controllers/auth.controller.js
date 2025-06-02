@@ -37,7 +37,8 @@ export const githubCallback = async (req, res) => {
       username: dbUser.username || normalizedUser.username,
       displayName: dbUser.display_name || normalizedUser.displayName,
       email: dbUser.email || normalizedUser.email,
-      avatar: dbUser.avatar_url || normalizedUser.avatar
+      avatar: dbUser.avatar_url || normalizedUser.avatar,
+      accessToken: normalizedUser.accessToken
     };
 
     const token = generateToken(tokenUser);
@@ -94,17 +95,49 @@ export const logoutUser = (req, res) => {
 
 export const getUserProfile = async (req, res) => {
   try {
-    const { id: username } = req.params; // Rename for clarity
-    if (!username) {
-      return res.status(400).json({success: false, message: "Username is required"});
+    const { id } = req.params;
+    if (!id) {
+      return res.status(400).json({success: false, message: "ID is required"});
     }
-    const userProfile = await fetchUserProfile(username);
-    res.status(200).json({success: true, message: "User profile fetched successfully", userProfile});
+    
+    // Get user's GitHub access token from JWT
+    const userToken = req.user?.accessToken;
+    
+    if (!userToken) {
+      return res.status(401).json({
+        success: false, 
+        message: "GitHub access token not found. Please re-authenticate."
+      });
+    }
+    
+    // Pass the user's token to fetchUserProfile
+    const userProfile = await fetchUserProfile(id, userToken);
+    
+    res.status(200).json({
+      success: true, 
+      message: "User profile fetched successfully", 
+      userProfile
+    });
   } catch (error) {
     console.error("Error in getUserProfile endpoint:", error);
-    res.status(500).json({success: false, message: "Error while fetching user profile", error: error.message});
+    
+    // More specific error handling
+    if (error.message.includes('rate limit')) {
+      res.status(429).json({
+        success: false, 
+        message: "GitHub API rate limit exceeded. Please try again later.", 
+        error: error.message
+      });
+    } else {
+      res.status(500).json({
+        success: false, 
+        message: "Error while fetching user profile", 
+        error: error.message
+      });
+    }
   }
 }
+
 
 // Get user info from GitHub
 export const getUserInfo = async (req, res) => {

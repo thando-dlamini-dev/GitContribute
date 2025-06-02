@@ -20,7 +20,7 @@ export const initializePassPort = () => {
             displayName: profile.displayName,
             email: profile.emails[0].value,
             profilePicture: profile.photos[0].value,
-            accessToken,
+            accessToken: accessToken,
         }
 
         return done(null, userProfile)
@@ -55,7 +55,8 @@ export const generateToken = (user) => {
       id: user.id,
       username: user.username,
       displayName: user.displayName,
-      avatar: user.avatar
+      avatar: user.avatar,
+      accessToken: user.accessToken
     },
     process.env.JWT_SECRET,
     { expiresIn: '7d' }

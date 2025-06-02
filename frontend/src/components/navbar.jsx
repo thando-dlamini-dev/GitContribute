@@ -68,7 +68,7 @@ const Navbar = () => {
                             Login
                         </a>}
                         {user && <a 
-                            href="/login" 
+                            onClick={logout}
                             className='font-medium transition-colors duration-300 text-slate-600 hover:text-purple-600'
                         >
                             Logout

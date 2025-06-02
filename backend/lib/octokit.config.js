@@ -4,11 +4,17 @@ const octokit = new Octokit({
   auth: process.env.GITHUB_TOKEN
 });
 
-export const fetchUserProfile = async (user) => {
-  const { id, username } = user
-  console.log("Fetching user profile for user. ", "User ID: ", id, "Username:", username);
-  const userProfile = await octokit.users.getById(id)
-
+export const fetchUserProfile = async (username) => {
+  try {
+    console.log("Fetching user profile for username:", username);
+    const response = await octokit.users.getByUsername({
+      username: username
+    });
+    return response.data;
+  } catch (error) {
+    console.error("Octokit error:", error);
+    throw error;
+  }
 }
 
 // Method 1: Search by Topics (Recommended)

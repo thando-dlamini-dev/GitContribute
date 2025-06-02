@@ -13,6 +13,6 @@ router.get('/user', authenticateJWT, getCurrentUser);
 router.post('/refresh', authenticateJWT, refreshToken);
 router.post('/logout', logoutUser);
 router.get('/user/info', authenticateJWT, getUserInfo);
-router.get('/user/user-profile/:id', authenticateJWT, getUserProfile);  
+router.get('/user/user-profile/:username', authenticateJWT, getUserProfile);
 
 export default router;

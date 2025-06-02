@@ -141,6 +141,40 @@ const useAuthStore = create(
           }, 500);
         },
 
+        getUserProfile: async (userIdentifier) => {
+            try {
+                const token = localStorage.getItem('token');
+                
+                if (!token) {
+                    toast.error("No authentication token found");
+                    return;
+                }
+                
+                set({isLoading: true});
+                
+                // Correct axios.get syntax: axios.get(url, config)
+                const result = await api.get(`/api/auth/user/user-profile/${userIdentifier}`, {
+                    headers: {Authorization: `Bearer ${token}`}
+                });
+                
+                toast.success(result.data.message);
+                set({isLoading: false, userProfile: result.data.userProfile});
+                
+            } catch (error) {
+                set({isLoading: false});
+                console.error("Store error:", error);
+                
+                // Better error handling
+                if (error.response?.status === 401) {
+                    toast.error("Authentication failed. Please login again.");
+                    // Trigger logout or redirect to login
+                    get().logout();
+                } else {
+                    toast.error("Error while fetching user profile: " + (error.response?.data?.message || error.message));
+                }
+            }
+        },
+
         // Set authentication data after successful login
         setAuthData: (authData) => {
           if (!authData || !authData.token || !authData.user) return;
@@ -165,7 +199,11 @@ const useAuthStore = create(
     },
     {
       name: "auth-storage", // Name for localStorage key
-      partialize: (state) => ({ token: state.token }), // Only persist token to localStorage
+      partialize: (state) => ({ 
+        token: state.token,
+        user: state.user,
+        isAuthenticated: state.isAuthenticated 
+      }),
     }
   )
 );

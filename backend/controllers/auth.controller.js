@@ -94,12 +94,15 @@ export const logoutUser = (req, res) => {
 
 export const getUserProfile = async (req, res) => {
   try {
-    const { id } = req.params;
-    const userProfile = await fetchUserProfile(id);
+    const { id: username } = req.params; // Rename for clarity
+    if (!username) {
+      return res.status(400).json({success: false, message: "Username is required"});
+    }
+    const userProfile = await fetchUserProfile(username);
     res.status(200).json({success: true, message: "User profile fetched successfully", userProfile});
   } catch (error) {
-    console.log("Error in getUserProfile endpoint:", error);
-    res.status(500).json({success: false, message: "Error while fetching user profile", error});
+    console.error("Error in getUserProfile endpoint:", error);
+    res.status(500).json({success: false, message: "Error while fetching user profile", error: error.message});
   }
 }
 

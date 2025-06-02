@@ -103,7 +103,7 @@ const useAuthStore = create(
           // Add timestamp to prevent caching of the auth request
           const timestamp = new Date().getTime();
 
-          window.location.href = `http://localhost:5500/api/auth/github?t=${timestamp}`;
+          window.location.href = `http://localhost:5000/api/auth/github?t=${timestamp}`;
         },
 
 

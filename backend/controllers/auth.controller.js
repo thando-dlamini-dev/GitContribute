@@ -1,6 +1,6 @@
 import passport from "passport";
 import { generateToken } from "../lib/passport.config.js";
-import { fetchUserProfile } from "../lib/octokit.config.js";
+import { fetchUserProfile, getUserRepoData } from "../lib/octokit.config.js";
 import { findOrCreateUser } from "../models/user.model.js";
 
 // GitHub OAuth authentication
@@ -138,6 +138,41 @@ export const getUserProfile = async (req, res) => {
   }
 }
 
+export const fetchUserTechStack = async (req, res) => {
+  try {
+    const { username } = req.params;
+    if (!username) {
+      return res.status(400).json({success: false, message: "Username is required"});
+    }
+
+    console.log("Fetching techStack for user: ", username);
+
+    const userToken = req.user?.accessToken;
+    if (!userToken) {
+      return res.status(401).json({success: false, message: "GitHub access token not found. Please re-authenticate."});
+    }
+
+    const techStack = await getUserRepoData(username, userToken);
+    res.status(200).json({success: true, message: "User repos fetched successfully", techStack});
+
+  } catch (error) {
+    console.error("Error in fetchUserTechStack endpoint:", error);
+    
+    if (error.message.includes('rate limit')) {
+      res.status(429).json({
+        success: false, 
+        message: "GitHub API rate limit exceeded. Please try again later.", 
+        error: error.message
+      });
+    } else {
+      res.status(500).json({
+        success: false, 
+        message: "Error while fetching user profile", 
+        error: error.message
+      });
+    }
+  }
+}
 
 // Get user info from GitHub
 export const getUserInfo = async (req, res) => {

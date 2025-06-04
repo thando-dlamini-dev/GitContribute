@@ -76,7 +76,7 @@ const Navbar = () => {
                         {user && 
                         <img 
                             src={user.avatar} 
-                            className='w-8 h-8 border-4 rounded-full border-neutral-900' 
+                            className='w-8 h-8 border-2 rounded-full border-neutral-300' 
                             alt="User Avatar" 
                             />
                         }

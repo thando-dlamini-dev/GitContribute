@@ -7,7 +7,6 @@ import helmet from "helmet";
 import path from "path";
 import { fileURLToPath } from 'url';
 import emailRoutes from "./routes/email.route.js";
-import RepoRoutes from "./routes/repo.route.js"
 import authRoutes from "./routes/auth.route.js"
 import cookieParser from "cookie-parser";
 import { initDatabase } from './lib/db.config.js';
@@ -52,7 +51,8 @@ app.use(passport.initialize());
 initDatabase();
 
 //routes
-app.use("/api/repos", RepoRoutes)
+
+// app.use("/api/repos", RepoRoutes)
 app.use("/api/emails", emailRoutes)
 app.use("/api/auth", authRoutes)
 

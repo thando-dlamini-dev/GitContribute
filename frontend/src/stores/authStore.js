@@ -36,6 +36,8 @@ const useAuthStore = create(
         // Authentication state
         user: null,
         isAuthenticated: false,
+        userProfile: null,
+        techStack: [],
         isLoading: true,
         token: null,
 
@@ -171,6 +173,43 @@ const useAuthStore = create(
             }
           } catch (error) {
             console.error('Error fetching user profile:', error);
+            set({ 
+              error: error.response?.data?.message || error.message, 
+              isLoading: false 
+            });
+          }
+        },
+        fetchUserTechStack: async (username) => {
+          const { isLoading, techStack } = get();
+          
+          // Prevent multiple simultaneous requests
+          if (isLoading) {
+            console.log("Already loading, skipping request");
+            return;
+          }
+          
+          // Don't refetch if we already have the profile
+          if (techStack.length > 0) {
+            console.log("Tech stack already exists, skipping request");
+            return;
+          }
+
+          set({ isLoading: true, error: null });
+          
+          try {
+            const response = await api.get(`/api/auth/user/user-stack/${username}`);
+            
+            if (response.data.success) {
+              console.log(response.data.techStack);
+              set({ 
+                techStack: response.data.techStack, 
+                isLoading: false 
+              });
+            } else {
+              throw new Error(response.data.message || 'Failed to fetch profile');
+            }
+          } catch (error) {
+            console.error('Error fetching user profile:', error.message);
             set({ 
               error: error.response?.data?.message || error.message, 
               isLoading: false 

@@ -1,4 +1,54 @@
 import { Octokit } from '@octokit/rest';
+import { throttling } from '@octokit/plugin-throttling';
+
+// Create enhanced Octokit instance with throttling
+const MyOctokit = Octokit.plugin(throttling);
+
+// File extension to tech mapping
+const techStackMap = {
+  // Frontend
+  '.js': 'JavaScript',
+  '.jsx': 'React',
+  '.ts': 'TypeScript',
+  '.tsx': 'React with TypeScript',
+  '.vue': 'Vue',
+  '.svelte': 'Svelte',
+  '.css': 'CSS',
+  '.scss': 'Sass',
+  '.less': 'Less',
+  '.html': 'HTML',
+  '.htm': 'HTML',
+  
+  // Backend
+  '.py': 'Python',
+  '.java': 'Java',
+  '.php': 'PHP',
+  '.rb': 'Ruby',
+  '.go': 'Go',
+  '.rs': 'Rust',
+  
+  // Mobile
+  '.swift': 'Swift',
+  '.kt': 'Kotlin',
+  '.dart': 'Dart',
+  
+  // Databases
+  '.sql': 'SQL',
+  '.graphql': 'GraphQL',
+  
+  // Config/build
+  '.json': 'JSON',
+  '.yaml': 'YAML',
+  '.yml': 'YAML',
+  '.toml': 'TOML',
+  '.lock': 'Lock file',
+  '.sh': 'Shell Script',
+  '.bat': 'Batch Script',
+  
+  // Other
+  '.md': 'Markdown',
+  '.txt': 'Text',
+};
 
 // Create Octokit instance with user's token
 const createOctokitInstance = (userToken = null) => {
@@ -7,7 +57,6 @@ const createOctokitInstance = (userToken = null) => {
   });
 };
 
-// Modified to accept user token
 export const fetchUserProfile = async (userId, userToken = null) => {
   try {
     console.log("Fetching user profile for user ID:", userId);
@@ -34,251 +83,131 @@ export const fetchUserProfile = async (userId, userToken = null) => {
   }
 }
 
-// Alternative: Get user by username (doesn't require authentication)
-export const fetchUserByUsername = async (username, userToken = null) => {
-  try {
-    console.log("Fetching user profile for username:", username);
-    
-    const octokit = createOctokitInstance(userToken);
-    
-    const response = await octokit.users.getByUsername({
-      username: username
-    });
-    
-    return response.data;
-  } catch (error) {
-    console.error("Octokit error:", error.message);
-    throw new Error("Failed to fetch user profile: " + error.message);
-  }
-}
-
-// Get current authenticated user (requires user token)
-export const getCurrentAuthenticatedUser = async (userToken) => {
-  try {
-    if (!userToken) {
-      throw new Error("User token is required for this operation");
-    }
-    
-    const octokit = createOctokitInstance(userToken);
-    const response = await octokit.users.getAuthenticated();
-    
-    return response.data;
-  } catch (error) {
-    console.error("Octokit error:", error.message);
-    throw new Error("Failed to fetch authenticated user: " + error.message);
-  }
-}
-
-// Rest of your existing functions with token support
-export const searchReposByStack = async (stack, username = null, userToken = null) => {
+export const getUserRepoData = async (username, userToken = null) => {
   try {
     const octokit = createOctokitInstance(userToken);
-    
-    let query = '';
-    
-    if (Array.isArray(stack)) {
-      const topics = stack.map(tech => `topic:${tech.toLowerCase()}`).join(' ');
-      query = topics;
-    } else {
-      query = `topic:${stack.toLowerCase()}`;
-    }
-    
-    if (username) {
-      query += ` user:${username}`;
-    }
 
-    const { data: searchResults } = await octokit.rest.search.repos({
-      q: query,
-      sort: 'stars',
-      order: 'desc',
-      per_page: 30
+    // Get user's repositories
+    const repos = await octokit.paginate(octokit.repos.listForUser, {
+      username,
+      per_page: 100,
     });
 
-    return searchResults;
-  } catch (error) {
-    console.log("Error searching repos by stack:", error);
-    return { items: [], total_count: 0 };
-  }
-};
+    const techStack = new Set();
+    const extensionCounts = {};
 
-export const searchReposByTechStack = async (primaryLang, keywords, username = null) => {
-  try {
-    let query = `language:${primaryLang}`;
-    
-    // Add keywords that might be in description/readme
-    if (Array.isArray(keywords)) {
-      keywords.forEach(keyword => {
-        query += ` ${keyword}`;
-      });
-    }
-    
-    // Add user filter
-    if (username) {
-      query += ` user:${username}`;
-    }
+    // Limit the number of repos to analyze for performance
+    const reposToAnalyze = repos.slice(0, 3); // Reduced from 5 to 3 for faster response
 
-    const { data: searchResults } = await octokit.rest.search.repos({
-      q: query,
-      sort: 'stars',
-      order: 'desc',
-      per_page: 30
-    });
+    for (const repo of reposToAnalyze) {
+      if (repo.fork) continue; // Skip forks
 
-    return searchResults;
-  } catch (error) {
-    console.log("Error searching repos by tech stack:", error);
-    return { items: [], total_count: 0 };
-  }
-};
+      try {
+        console.log(`Analyzing repo: ${repo.name}`);
+        
+        // Use Git Trees API for much faster recursive file listing
+        // This gets ALL files in one API call instead of one call per directory
+        const tree = await octokit.git.getTree({
+          owner: repo.owner.login,
+          repo: repo.name,
+          tree_sha: repo.default_branch,
+          recursive: true, // This is the key - gets all files recursively in one call
+        });
 
-// Method 3: Advanced Stack Search with Multiple Filters
-export const advancedStackSearch = async (searchOptions) => {
-  const {
-    languages = [],      // ['javascript', 'python']
-    topics = [],         // ['react', 'nodejs', 'mongodb']
-    keywords = [],       // ['fullstack', 'web-app']
-    username = null,
-    minStars = 0,
-    maxSize = null,      // Repository size in KB
-    created = null,      // 'YYYY-MM-DD' or '>YYYY-MM-DD'
-    pushed = null        // 'YYYY-MM-DD' or '>YYYY-MM-DD'
-  } = searchOptions;
-
-  try {
-    let queryParts = [];
-
-    // Add languages (OR condition)
-    if (languages.length > 0) {
-      if (languages.length === 1) {
-        queryParts.push(`language:${languages[0]}`);
-      } else {
-        const langQuery = languages.map(lang => `language:${lang}`).join(' OR ');
-        queryParts.push(`(${langQuery})`);
+        // Process each file from the tree
+        for (const item of tree.data.tree) {
+          if (item.type === 'blob' && item.path) { // 'blob' means file
+            const filename = item.path.split('/').pop(); // Get filename from path
+            
+            if (filename && filename.includes('.')) {
+              const extension = filename.substring(filename.lastIndexOf('.')).toLowerCase();
+              
+              if (techStackMap[extension]) {
+                const tech = techStackMap[extension];
+                techStack.add(tech);
+                extensionCounts[extension] = (extensionCounts[extension] || 0) + 1;
+              }
+            }
+          }
+        }
+      } catch (error) {
+        console.error(`Error processing repo ${repo.name}:`, error.message || error);
+        // If Git Trees API fails, try the slower Contents API as fallback
+        try {
+          console.log(`Fallback: Using Contents API for ${repo.name}`);
+          const fallbackFiles = await getFallbackFiles(octokit, repo.owner.login, repo.name, repo.default_branch);
+          
+          for (const file of fallbackFiles) {
+            if (file.name && file.name.includes('.')) {
+              const extension = file.name.substring(file.name.lastIndexOf('.')).toLowerCase();
+              
+              if (techStackMap[extension]) {
+                const tech = techStackMap[extension];
+                techStack.add(tech);
+                extensionCounts[extension] = (extensionCounts[extension] || 0) + 1;
+              }
+            }
+          }
+        } catch (fallbackError) {
+          console.error(`Fallback also failed for ${repo.name}:`, fallbackError.message);
+        }
       }
     }
 
-    // Add topics (AND condition)
-    topics.forEach(topic => {
-      queryParts.push(`topic:${topic.toLowerCase()}`);
+    // Convert to sorted array by frequency
+    const sortedTechStack = Array.from(techStack).sort((a, b) => {
+      const extA = Object.entries(techStackMap).find(([_, value]) => value === a)?.[0];
+      const extB = Object.entries(techStackMap).find(([_, value]) => value === b)?.[0];
+      return (extensionCounts[extB] || 0) - (extensionCounts[extA] || 0);
     });
-
-    // Add keywords (search in name, description, readme)
-    keywords.forEach(keyword => {
-      queryParts.push(`"${keyword}"`);
-    });
-
-    // Add user filter
-    if (username) {
-      queryParts.push(`user:${username}`);
-    }
-
-    // Add star filter
-    if (minStars > 0) {
-      queryParts.push(`stars:>=${minStars}`);
-    }
-
-    // Add size filter
-    if (maxSize) {
-      queryParts.push(`size:<=${maxSize}`);
-    }
-
-    // Add date filters
-    if (created) {
-      queryParts.push(`created:${created}`);
-    }
-    if (pushed) {
-      queryParts.push(`pushed:${pushed}`);
-    }
-
-    const query = queryParts.join(' ');
-    console.log('Search query:', query);
-
-    const { data: searchResults } = await octokit.rest.search.repos({
-      q: query,
-      sort: 'stars',
-      order: 'desc',
-      per_page: 50
-    });
-
-    return searchResults;
-  } catch (error) {
-    console.log("Error in advanced stack search:", error);
-    return { items: [], total_count: 0 };
-  }
-};
-
-// Method 4: Popular Stack Combinations
-export const searchPopularStacks = async (stackName) => {
-  const stackQueries = {
-    'mern': 'topic:react topic:nodejs topic:mongodb topic:express',
-    'mean': 'topic:angular topic:nodejs topic:mongodb topic:express',
-    'lamp': 'language:php topic:apache topic:mysql topic:linux',
-    'django': 'language:python topic:django',
-    'rails': 'language:ruby topic:rails',
-    'vue': 'topic:vue topic:nodejs',
-    'next': 'topic:nextjs topic:react',
-    'nuxt': 'topic:nuxtjs topic:vue',
-    'flutter': 'language:dart topic:flutter',
-    'react-native': 'topic:react-native language:javascript',
-    'spring': 'language:java topic:spring',
-    'dotnet': 'language:c# topic:dotnet',
-    'laravel': 'language:php topic:laravel'
-  };
-
-  const query = stackQueries[stackName.toLowerCase()];
-  if (!query) {
-    throw new Error(`Stack "${stackName}" not found. Available: ${Object.keys(stackQueries).join(', ')}`);
-  }
-
-  try {
-    const { data: searchResults } = await octokit.rest.search.repos({
-      q: query + ' stars:>=10', // Filter for quality repos
-      sort: 'stars',
-      order: 'desc',
-      per_page: 20
-    });
-
-    return searchResults;
-  } catch (error) {
-    console.log(`Error searching ${stackName} stack:`, error);
-    return { items: [], total_count: 0 };
-  }
-};
-
-
-export const extractRepoData = (repo) => {
-    if (!repo) {
-      return null;
-    }
 
     return {
-    id: repo.id,
-    name: repo.name,
-    fullName: repo.full_name,
-    description: repo.description,
-    url: repo.html_url,
-    stars: repo.stargazers_count,
-    forks: repo.forks_count,
-    language: repo.language,
-    topics: repo.topics || [],
-    owner: {
-      login: repo.owner.login,
-      avatar: repo.owner.avatar_url,
-      type: repo.owner.type
-    },
-    dates: {
-      created: repo.created_at,
-      updated: repo.updated_at,
-      lastPush: repo.pushed_at
-    },
-    settings: {
-      private: repo.private,
-      fork: repo.fork,
-      archived: repo.archived,
-      hasIssues: repo.has_issues,
-      hasWiki: repo.has_wiki
-    },
-    license: repo.license?.name || 'No license',
-    size: repo.size
-  };
-}
+      username,
+      totalRepos: repos.length,
+      analyzedRepos: reposToAnalyze.length,
+      techStack: sortedTechStack,
+      extensionCounts,
+    };
+  } catch (error) {
+    console.error(`Error fetching data for user ${username}:`, error.message || error);
+    throw error;
+  }
+};
+
+// Fallback function for when Git Trees API fails (limited recursive depth for performance)
+const getFallbackFiles = async (octokit, owner, repo, branch, path = '', depth = 0, maxDepth = 2) => {
+  if (depth > maxDepth) return []; // Limit recursion depth for performance
+  
+  try {
+    const response = await octokit.repos.getContent({
+      owner,
+      repo,
+      path,
+      ref: branch,
+    });
+
+    const files = [];
+    const items = Array.isArray(response.data) ? response.data : [response.data];
+
+    for (const item of items) {
+      if (item.type === 'file') {
+        files.push(item);
+      } else if (item.type === 'dir' && depth < maxDepth) {
+        // Only recurse if we haven't hit max depth
+        const subFiles = await getFallbackFiles(octokit, owner, repo, branch, item.path, depth + 1, maxDepth);
+        files.push(...subFiles);
+      }
+    }
+
+    return files;
+  } catch (error) {
+    console.error(`Error in fallback for ${path}:`, error.message);
+    return [];
+  }
+};
+
+// Additional helper function to get just the tech stack
+export const getUserTechStack = async (username, userToken = null) => {
+  const repoData = await getUserRepoData(username, userToken);
+  return repoData.techStack;
+};

@@ -179,6 +179,29 @@ const useAuthStore = create(
             });
           }
         },
+
+        generateReposWithAi: async (username, id) => {
+          try {
+            const response = await api.get(`/api/auth/user/user-stack/${username}/${id}`);
+            
+            if (response.data.success) {
+              console.log(response.data.techStack);
+              set({ 
+                techStack: response.data.techStack, 
+                isLoading: false 
+              });
+            } else {
+              throw new Error(response.data.message || 'Failed to fetch profile');
+            }
+          } catch (error) {
+            console.error('Error fetching user profile:', error);
+            set({ 
+              error: error.response?.data?.message || error.message, 
+              isLoading: false 
+            });
+          }
+        },
+
         fetchUserTechStack: async (username) => {
           const { isLoading, techStack } = get();
           

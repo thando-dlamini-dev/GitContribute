@@ -1,7 +1,8 @@
 import passport from "passport";
 import { generateToken } from "../lib/passport.config.js";
-import { fetchUserProfile, getUserRepoData } from "../lib/octokit.config.js";
+import { fetchUserProfile, getUserRepoData, searchReposOnGitHub } from "../lib/octokit.config.js";
 import { findOrCreateUser } from "../models/user.model.js";
+import { generateContributionRepos } from "../lib/huggingFace.config.js";
 
 // GitHub OAuth authentication
 export const githubAuth = passport.authenticate("github", {
@@ -93,24 +94,21 @@ export const logoutUser = (req, res) => {
   });
 };
 
-export const getUserProfile = async (req, res) => {
+export const getUserProfile = async (id) => {
   try {
-    const { id } = req.params;
     if (!id) {
-      return res.status(400).json({success: false, message: "ID is required"});
+      throw new Error('User ID is required');
     }
     
     // Get user's GitHub access token from JWT
     const userToken = req.user?.accessToken;
     
     if (!userToken) {
-      return res.status(401).json({
-        success: false, 
-        message: "GitHub access token not found. Please re-authenticate."
-      });
+      throw new Error('GitHub access token not found. Please re-authenticate.');
     }
     
     // Pass the user's token to fetchUserProfile
+    console.log("Fetching user profile for user ID:", id);
     const userProfile = await fetchUserProfile(id, userToken);
     
     res.status(200).json({
@@ -153,24 +151,12 @@ export const fetchUserTechStack = async (req, res) => {
     }
 
     const techStack = await getUserRepoData(username, userToken);
-    res.status(200).json({success: true, message: "User repos fetched successfully", techStack});
+    return techStack;
 
   } catch (error) {
     console.error("Error in fetchUserTechStack endpoint:", error);
+    throw new Error("Failed to fetch user tech stack");
     
-    if (error.message.includes('rate limit')) {
-      res.status(429).json({
-        success: false, 
-        message: "GitHub API rate limit exceeded. Please try again later.", 
-        error: error.message
-      });
-    } else {
-      res.status(500).json({
-        success: false, 
-        message: "Error while fetching user profile", 
-        error: error.message
-      });
-    }
   }
 }
 
@@ -189,19 +175,8 @@ export const getUserInfo = async (req, res) => {
     
     // Get user information from GitHub
     const userData = await githubService.getUserInfo();
-    
-    return res.status(200).json({
-      user: {
-        id: userData.id,
-        login: userData.login,
-        name: userData.name,
-        avatar: userData.avatar,
-        html_url: userData.html_url,
-        public_repos: userData.public_repos,
-        followers: userData.followers,
-        following: userData.following
-      }
-    });
+    return userData;
+
   } catch (error) {
     console.error('Error fetching user info:', error);
     return res.status(500).json({
@@ -210,3 +185,30 @@ export const getUserInfo = async (req, res) => {
     });
   }
 };
+
+export const generateReposWithAi = async (req, res) => {
+  const { username, id } = req.params;
+  const { count } = req.body;
+  
+  try {
+    const techStack = await fetchUserTechStack(username);
+    console.log("User Tech stack: ", techStack);
+    const userProfile = await getUserProfile(id);
+    console.log("User Profile: ", userProfile);
+    const repos = await searchReposOnGitHub(techStack, count);
+
+    const generatedRepos = await generateContributionRepos(techStack, userProfile, repos);
+    
+    return res.status(200).json({success: true, message: "Repos generated successfully"}, {
+      techStack,
+      userProfile,
+      repos,
+      count,
+      generatedRepos
+    });
+    
+  } catch (error) {
+    console.log(`Error in generateReposWithAi endpoint : ${error}`);
+    return res.status(500).json({success: false, message: "Error while generating repos", error});
+  }
+}

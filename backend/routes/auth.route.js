@@ -1,6 +1,6 @@
 import express from 'express';
 import passport from 'passport';
-import { githubAuth, githubCallback, getCurrentUser, refreshToken, logoutUser, getUserInfo, getUserProfile, fetchUserTechStack } from '../controllers/auth.controller.js';
+import { githubAuth, githubCallback, getCurrentUser, refreshToken, logoutUser, getUserInfo, generateReposWithAi } from '../controllers/auth.controller.js';
 import { authenticateJWT } from '../middleware/authMiddleware.js';
 
 const router = express.Router();
@@ -13,7 +13,6 @@ router.get('/user', authenticateJWT, getCurrentUser);
 router.post('/refresh', authenticateJWT, refreshToken);
 router.post('/logout', logoutUser);
 router.get('/user/info', authenticateJWT, getUserInfo);
-router.get('/user/user-profile/:id', authenticateJWT, getUserProfile);
-router.get('/user/user-stack/:username', authenticateJWT, fetchUserTechStack);
+router.get('/user/user-stack/:username/:id', authenticateJWT, generateReposWithAi);
 
 export default router;

@@ -178,6 +178,24 @@
   resolved "https://registry.npmjs.org/@graphql-typed-document-node/core/-/core-3.2.0.tgz"
   integrity sha512-mB9oAsNCm9aM3/SOv4YtBMqZbYj10R7dkq8byBqxGY/ncFwhf2oQzMV+LCRlWoDSEBJ3COiR1yeDvMtsoOsuFQ==
 
+"@huggingface/inference@^4.0.2":
+  version "4.0.2"
+  resolved "https://registry.yarnpkg.com/@huggingface/inference/-/inference-4.0.2.tgz#962a14c468311755fa34da143c045c34b9dd7775"
+  integrity sha512-XuWb8ocH7lA5kSdXrGnqshtRz3ocSBzEzxcp5xeAXLjgM1ocoIHq+RW8/Ti0xq3MeRGQWgUkYPCgDV/xgs8p4g==
+  dependencies:
+    "@huggingface/jinja" "^0.5.0"
+    "@huggingface/tasks" "^0.19.11"
+
+"@huggingface/jinja@^0.5.0":
+  version "0.5.0"
+  resolved "https://registry.yarnpkg.com/@huggingface/jinja/-/jinja-0.5.0.tgz#0da65deb98798cd24ea42ad13f6df224ce23f443"
+  integrity sha512-Ptc03/jGRiYRoi0bUYKZ14MkDslsBRT24oxmsvUlfYrvQMldrxCevhPnT+hfX8awKTT8/f/0ZBBWldoeAcMHdQ==
+
+"@huggingface/tasks@^0.19.11":
+  version "0.19.11"
+  resolved "https://registry.yarnpkg.com/@huggingface/tasks/-/tasks-0.19.11.tgz#2c1005b189432528c1e17d1ec9938d11f65a01ca"
+  integrity sha512-oBhSgVlg7Pp643MsH8BiI3OAXIMJNxdSiMtv4mApRZV8dmAz8oasKhg6CVKIplO7vAO7F6dkmMn4bYM64I2A9w==
+
 "@octokit/auth-token@^6.0.0":
   version "6.0.0"
   resolved "https://registry.npmjs.org/@octokit/auth-token/-/auth-token-6.0.0.tgz"
@@ -239,7 +257,7 @@
 
 "@octokit/plugin-throttling@^11.0.1":
   version "11.0.1"
-  resolved "https://registry.yarnpkg.com/@octokit/plugin-throttling/-/plugin-throttling-11.0.1.tgz#31a0b5e759f0313514d9522a4103360f17ffc2e4"
+  resolved "https://registry.npmjs.org/@octokit/plugin-throttling/-/plugin-throttling-11.0.1.tgz"
   integrity sha512-S+EVhy52D/272L7up58dr3FNSMXWuNZolkL4zMJBNIfIxyZuUcczsQAU4b5w6dewJXnKYVgSHSV5wxitMSW1kw==
   dependencies:
     "@octokit/types" "^14.0.0"
@@ -484,9 +502,10 @@ axios@^1.9.0:
   version "1.0.0"
   dependencies:
     "@apollo/server" "^4.12.1"
+    "@octokit/plugin-throttling" "^11.0.1"
     "@octokit/rest" "^22.0.0"
     axios "^1.9.0"
-    backend "file:../../../../AppData/Local/Yarn/Cache/v6/npm-backend-1.0.0-f661a08d-7844-4f79-9ac8-b45bc7ab869a-1749048548593/node_modules/backend"
+    backend "file:../../../../AppData/Local/Yarn/Cache/v6/npm-backend-1.0.0-acada267-8585-47ff-a373-da384ae68cd6-1749108970886/node_modules/backend"
     cookie-parser "^1.4.7"
     cors "^2.8.5"
     dotenv "^16.5.0"
@@ -567,7 +586,7 @@ body-parser@^2.2.0:
 
 bottleneck@^2.15.3:
   version "2.19.5"
-  resolved "https://registry.yarnpkg.com/bottleneck/-/bottleneck-2.19.5.tgz#5df0b90f59fd47656ebe63c78a98419205cadd91"
+  resolved "https://registry.npmjs.org/bottleneck/-/bottleneck-2.19.5.tgz"
   integrity sha512-VHiNCbI1lKdl44tGrhNfU3lup0Tj/ZBMJB5/2ZbNXRCPuRCO7ed2mgcK4r17y+KB2EfuYuRaVlwNbAeaWGSpbw==
 
 brace-expansion@^1.1.7:
@@ -958,7 +977,7 @@ fresh@^2.0.0:
 
 fsevents@~2.3.2:
   version "2.3.3"
-  resolved "https://registry.yarnpkg.com/fsevents/-/fsevents-2.3.3.tgz#cac6407785d03675a2a5e1a5305c697b347d90d6"
+  resolved "https://registry.npmjs.org/fsevents/-/fsevents-2.3.3.tgz"
   integrity sha512-5xoDfX+fL7faATnagmWPpbFtwh/R77WmMMqqHGS65C3vvB0YHrgF+B1YmZ3441tMj5n63k0212XNoJwzlhffQw==
 
 function-bind@^1.1.2:

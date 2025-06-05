@@ -177,14 +177,17 @@ export const getUserRepoData = async (username, userToken = null) => {
 
 export const searchReposOnGitHub = async (techStack, count = 10, userToken = null) => {
   const octokit = createOctokitInstance(userToken);
-
+  
+  // Convert array to space-separated string and wrap each term in quotes
+  const techQuery = techStack.map(tech => `"${tech}"`).join(' ');
+  
   const result = await octokit.rest.search.repos({
-    q: `${techStack} in:description language:JavaScript stars:>100`,
+    q: `${techQuery} in:description,readme stars:>100`,
     sort: "stars",
     order: "desc",
     per_page: count,
   });
-
+  
   return result.data.items.map(repo => ({
     name: repo.full_name,
     url: repo.html_url,

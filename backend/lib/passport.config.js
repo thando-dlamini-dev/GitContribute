@@ -55,6 +55,7 @@ export const generateToken = (user) => {
       id: user.id,
       username: user.username,
       displayName: user.displayName,
+      email: user.email,
       avatar: user.avatar,
       accessToken: user.accessToken
     },

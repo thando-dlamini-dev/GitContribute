@@ -174,6 +174,50 @@ export const getUserRepoData = async (username, userToken = null) => {
   }
 };
 
+export const searchReposByTechStack = async (techStack, userToken = null) => {
+
+  const octokit = createOctokitInstance(userToken);
+  try {
+    // Create search query from tech stack array
+    const query = techStack.map(tech => `topic:${tech}`).join(' ') + 
+                  ' sort:stars-desc';
+    
+    const { data } = await octokit.search.repos({
+      q: query,
+      per_page: 10, // adjust as needed
+    });
+    
+    return data.items;
+  } catch (error) {
+    console.error('Error searching repos:', error);
+    return [];
+  }
+}
+
+// Example usage
+
+// const stack = [
+//   'JavaScript',
+//   'React',
+//   'JSON',
+//   'Lock file',
+//   'Markdown',
+//   'HTML',
+//   'CSS'
+// ];
+
+// Define terms to exclude (case insensitive)
+// const excludeTerms = ['json', 'lock file', 'markdown', 'html', 'css'];
+
+// const finalStack = stack
+//   .map(tech => tech.toLowerCase()) // Convert to lowercase
+//   .filter(tech => !excludeTerms.includes(tech)); // Filter out unwanted terms
+
+// console.log("Final Stack", finalStack); 
+// searchReposByTechStack(finalStack).then(repos => {
+//   console.log('Found repositories:', repos.map(r => r.full_name));
+// });
+
 
 export const searchReposOnGitHub = async (techStack, count = 10, userToken = null) => {
   const octokit = createOctokitInstance(userToken);

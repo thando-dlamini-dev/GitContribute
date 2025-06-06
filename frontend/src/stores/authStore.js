@@ -34,7 +34,7 @@ const useAuthStore = create(
       user: null,
       isAuthenticated: false,
       userProfile: null,
-      repoData: null,
+      repos: null,
       techStack: {},
       isLoading: false,
       error: null,
@@ -126,6 +126,11 @@ const useAuthStore = create(
         });
 
         toast.success("Logged out successfully.");
+
+        // Optional: Force clean GitHub OAuth state
+          setTimeout(() => {
+            window.location.href = "https://github.com/logout";
+          }, 500);
       },
 
       // Fixed: Combined function to generate repos with AI
@@ -143,7 +148,7 @@ const useAuthStore = create(
             set({ 
               techStack: response.data.techStack,
               userProfile: response.data.userProfile,
-              repoData: response.data,
+              repos: response.data.repos,
               isLoading: false 
             });
             toast.success(response.data.message);
